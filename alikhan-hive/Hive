@@ -1,0 +1,9 @@
+select tb3.event_page, lag(tb3.event_page, 1) over(partition by tb3.ids order by tb3.timestamp asc) as lag_col from
+(select * from
+(select * from (select concat(user_id, session_id) as ids, event_page, timestamp from clickstream) tb1
+left join 
+(select concat(user_id, session_id) as ids, min(timestamp) as stop_time from clickstream where event_type like '%error%' group by user_id, session_id) stop_table
+on tb1.ids = stop_table.ids) tb2
+where not tb2.timestamp > tb2.stop_time) tb3;
+
+
